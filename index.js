@@ -15,19 +15,22 @@ async function demoTree() {
     await merk.commit(state)
 
     let rootHash = merk.hash(state)
-    console.log(`root: ${rootHash}`)
+    console.log(`root = ${rootHash}`)
 
     // create a JSON Merkle proof of the queried path
     let proof = await merk.proof(state, 'baz.y')
     console.log("")
+    console.log("merk.proof(state, 'baz.y')")
     console.log(proof)
 
     proof = await merk.proof(state, 'food')
     console.log("")
+    console.log("merk.proof(state, 'food')")
     console.log(proof)
 
     proof = await merk.proof(state, 'baz')
     console.log("")
+    console.log("merk.proof(state, 'baz')")
     console.log(proof)
 } 
 
