@@ -2,6 +2,24 @@ const merk = require('merk');
 const levelup = require('levelup');
 const memdown = require('memdown');
 
+// demoSingle is just a leaf node
+async function demoSingle() {
+    const db = levelup(memdown());
+    let state = await merk(db);
+
+    state.dead = 'beef';
+    await merk.commit(state)
+
+    let rootHash = merk.hash(state)
+    console.log(`root = ${rootHash}`)
+
+    // create a JSON Merkle proof of the queried path
+    let proof = await merk.proof(state, 'dead')
+    console.log("")
+    console.log(proof)
+}
+
+
 // demoTree contains many items which embed other ones
 // this creates somewhat complex proofs
 async function demoTree() {
@@ -84,5 +102,6 @@ async function demoLeaves() {
 
 demoTree().
     then(demoLeaves).
+    then(demoSingle).
     then(() => console.log("done")).
     catch(err => console.log(`error: ${err}`));

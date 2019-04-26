@@ -10,7 +10,7 @@ function convertProof(node) {
 
 const isLeaf = (node) => (!node.left && !node.right);
 
-const isChild = (child) => (child !== null && child === "object");
+const isChild = (child) => (child !== null && typeof child === "object");
 
 const isEmpty = (child) => (child === null || child === undefined);
 
