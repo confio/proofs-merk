@@ -10,7 +10,7 @@ This is just demo code now to understand the format.
 
 ```shell
 yarn install
-node index.js
+node demo.js
 ```
 
 ### Example output

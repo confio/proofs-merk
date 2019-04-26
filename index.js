@@ -1,88 +1,80 @@
-const merk = require('merk');
-const levelup = require('levelup');
-const memdown = require('memdown');
+const { applyLeaf, proofs } = require("@confio/proofs");
 
-// demoTree contains many items which embed other ones
-// this creates somewhat complex proofs
-async function demoTree() {
-    const db = levelup(memdown());
-    let state = await merk(db);
-
-    // TODO: add more data
-    state.foo = 'bar';
-    state.food = 'yummy';
-    state.bath = {tub: 'full', room: 'small'};
-    state.baz = { x: 123, y: { z: 456 } };
-
-    await merk.commit(state)
-
-    let rootHash = merk.hash(state)
-    console.log(`root = ${rootHash}`)
-
-    // create a JSON Merkle proof of the queried path
-    let proof = await merk.proof(state, 'baz.y')
-    console.log("")
-    console.log("merk.proof(state, 'baz.y')")
-    console.log(proof)
-
-    proof = await merk.proof(state, 'food')
-    console.log("")
-    console.log("merk.proof(state, 'food')")
-    console.log(proof)
-
-    proof = await merk.proof(state, 'baz')
-    console.log("")
-    console.log("merk.proof(state, 'baz')")
-    console.log(proof)
-} 
-
-// demoLeaves is a nested heirarchy to simulate ibc packets.
-// we only query for end results, never prefixes.
-// example: 
-//   ibc.chain_a.in.0 = "abcd"
-//   ibc.chain_a.in.1 = "deaf"
-//   ibc.chain_a.out.0 = "food"
-async function demoLeaves() {
-    const db = levelup(memdown());
-    let state = await merk(db);
-
-    state.ibc = {}
-    state.ibc.chain_a = {}
-    state.ibc.chain_b = {}
-
-    state.ibc.chain_a.in = {
-        0: "abcd",
-        1: "deaf",
-        2: "limit",
+// convertProof converts a merk.js proof into @confio/proof format
+function convertProof(node) {
+    if (isLeaf(node)) {
+        return genLeafProof(node);
     }
-    state.ibc.chain_a.out = {
-        0: "resp",
-        1: "reqd",
-    }
-    state.ibc.chain_b.in = {
-        0: "pending",
-    }
-
-    state.cash = {
-        "foo": 100,
-        "bar": 1000,
-        "dings": 59.45,
-    }
-
-    await merk.commit(state)
-
-    let rootHash = merk.hash(state)
-    console.log(`root = ${rootHash}`)
-
-    // create a JSON Merkle proof of the queried path
-    let proof = await merk.proof(state, 'ibc.chain_a.out.0')
-    console.log("")
-    console.log("merk.proof(state, 'ibc.chain_a.out.0')")
-    console.log(proof)
+    return genInnerProof(node);
 }
 
+const isLeaf = (node) => (!node.left && !node.right);
 
-demoTree().
-    then(demoLeaves).
-    then(() => console.log("done")).
-    catch(err => console.log(`error: ${err}`));
+const isChild = (child) => (child !== null && child === "object");
+
+const isEmpty = (child) => (child === null || child === undefined);
+
+const merkLeafOp = {
+    hash: proofs.HashOp.BITCOIN,
+    length: proofs.LengthOp.VAR_PROTO,    
+}
+
+function genLeafProof(node) {
+    const leaf = {
+        leaf: merkLeafOp,
+    };
+    const rehash = {
+        inner: {
+            hash: proofs.HashOp.BITCOIN,
+            prefix: new Uint8Array(40),
+        }
+    }
+    return [leaf, rehash];
+}
+
+// this means either left or right is a child
+function genInnerProof(node) {
+    if (isChild(node.left)) {
+        const subtree = convertProof(node.left);
+        const step = {
+            inner: {
+                hash: proofs.HashOp.BITCOIN,
+                suffix: new Uint8Array([...childHash(node.right), ...kvHash(node)]),
+            }
+        }
+        return [...subtree, step];
+    } else if (isChild(node.right)) {
+        const subtree = convertProof(node.right);
+        const step = {
+            inner: {
+                hash: proofs.HashOp.BITCOIN,
+                prefix: childHash(node.left),
+                suffix: kvHash(node),
+            }
+        }
+        return [...subtree, step];
+    } else {
+        throw new Error("call genInnerProof, but left nor right are child");
+    }
+}
+
+function kvHash(node) {
+    if (node.kvHash) {
+        return Buffer.from(node.kvHash, 'base64');
+    }
+    return applyLeaf(merkLeafOp, node.key, node.value);
+}
+
+function childHash(child) {
+    if (isEmpty(child)) {
+        return new Uint8Array(20);
+    } else if (typeof child === "string") {
+        return Buffer.from(child, "base64");
+    } else {
+        throw new Error(`Cannot return child hash of ${child}`);
+    }
+}
+
+module.exports = {
+    convertProof,
+};
