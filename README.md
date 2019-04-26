@@ -51,3 +51,21 @@ merk.proof(state, 'baz')
 ```
 
 Also see https://github.com/nomic-io/merk/issues/9 for a discussion of the format and validation algorithm
+
+### Issues found
+
+Running [demoLeaves()](./index.js#L45-L82) seems to produce the wrong leaf for a query
+
+```js
+merk.proof(state, 'state.ibc.chain_a.out.0')
+{ left: 'pn5KymcgwRrcgukLioozfN8tCOc=',
+  right:
+   { left: null,
+     right:
+      { left: null,
+        right: null,
+        key: '.ibc.chain_b.in',
+        value: '{"0":"pending"}' },
+     kvHash: '+Xnho5OYiHkJceNad+o5ckDmq18=' },
+  kvHash: '9YNse4WgJaZsHa/YRXlyc8/JKE8=' }
+```
