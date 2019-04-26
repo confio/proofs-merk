@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-"@confio/proofs@^0.1.1":
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/@confio/proofs/-/proofs-0.1.1.tgz#123db6c3cb8132fd1207bbf6777d36098b363c76"
-  integrity sha512-yEz9BGcId5MrsGxlr6Mkh4Jbk2i5FbyyaUk6oH3BOgFkUvwqKS9UpNKX5K7/v54psj7voG8Ee582WvDdzo3Z6w==
+"@confio/proofs@^0.1.2":
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/@confio/proofs/-/proofs-0.1.2.tgz#1efc5a81fc86e1411e2b46d291fe29f6dc9af5d7"
+  integrity sha512-Bsnnak10Ox3AK0v4gmC++0K/K5lLQMlA2FSAPjCHkHoSPQFFq1hlab/BjE79a/ew6nswcUjEzBsKAHOIxjIXlA==
   dependencies:
     jasmine-console-reporter "^3.1.0"
     protobufjs "^6.8.8"
