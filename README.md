@@ -50,22 +50,27 @@ merk.proof(state, 'baz')
   value: '{"x":123}' }
 ```
 
-Also see https://github.com/nomic-io/merk/issues/9 for a discussion of the format and validation algorithm
-
-### Issues found
-
-Running [demoLeaves()](./index.js#L45-L82) seems to produce the wrong leaf for a query
+Another example:
 
 ```js
-merk.proof(state, 'state.ibc.chain_a.out.0')
-{ left: 'pn5KymcgwRrcgukLioozfN8tCOc=',
-  right:
-   { left: null,
-     right:
+root = 5fa943e9dac00adac3c1e52ef2ac3dfd0c348451
+
+merk.proof(state, 'ibc.chain_a.out.0')
+{ left: 
+   { left: 'PCZt2mUUKj31EXESUYo+BVYcRrA=',
+     right: 
       { left: null,
         right: null,
-        key: '.ibc.chain_b.in',
-        value: '{"0":"pending"}' },
-     kvHash: '+Xnho5OYiHkJceNad+o5ckDmq18=' },
-  kvHash: '9YNse4WgJaZsHa/YRXlyc8/JKE8=' }
-```
+        key: '.ibc.chain_a.in',
+        value: '{"0":"abcd","1":"deaf","2":"limit"}' },
+     kvHash: 'USRr7L8cAVK76DfAJsfk6kct6OY=' },
+  right: 
+   { left: null,
+     right: 'bMSoOILGkbp2M9ShvyDX+kvNMxw=',
+     key: '.ibc.chain_b',
+     value: '{}' },
+  key: '.ibc.chain_a.out',
+  value: '{"0":"resp","1":"reqd"}' }
+  ```
+
+Also see https://github.com/nomic-io/merk/issues/9 for a discussion of the format and validation algorithm

@@ -75,9 +75,9 @@ async function demoLeaves() {
     console.log(`root = ${rootHash}`)
 
     // create a JSON Merkle proof of the queried path
-    let proof = await merk.proof(state, 'state.ibc.chain_a.out.0')
+    let proof = await merk.proof(state, 'ibc.chain_a.out.0')
     console.log("")
-    console.log("merk.proof(state, 'state.ibc.chain_a.out.0')")
+    console.log("merk.proof(state, 'ibc.chain_a.out.0')")
     console.log(proof)
 }
 
