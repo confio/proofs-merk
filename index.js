@@ -1,7 +1,26 @@
 const { applyLeaf, proofs } = require("@confio/proofs");
+const { Encoding } = require("@iov/encoding");
 
 // convertProof converts a merk.js proof into @confio/proof format
-function convertProof(node) {
+// returns existence proofs, only works with one leaf
+function convertProof(root) {
+    const { key, value } = getKeyValue(root);
+    return {
+        key: Encoding.toAscii(key),
+        value: Encoding.toUtf8(value),
+        steps: extractOps(root),
+    }
+}
+
+// get key value returns the key and value of leaf node as strings
+function getKeyValue(node) {
+    if (isLeaf(node)) {
+        return {key: node.key, value: node.value}
+    }
+    return isChild(node.left) ? getKeyValue(node.left): getKeyValue(node.right)
+}
+
+function extractOps(node) {
     if (isLeaf(node)) {
         return genLeafProof(node);
     }
@@ -35,7 +54,7 @@ function genLeafProof(node) {
 // this means either left or right is a child
 function genInnerProof(node) {
     if (isChild(node.left)) {
-        const subtree = convertProof(node.left);
+        const subtree = extractOps(node.left);
         const step = {
             inner: {
                 hash: proofs.HashOp.BITCOIN,
@@ -44,7 +63,7 @@ function genInnerProof(node) {
         }
         return [...subtree, step];
     } else if (isChild(node.right)) {
-        const subtree = convertProof(node.right);
+        const subtree = extractOps(node.right);
         const step = {
             inner: {
                 hash: proofs.HashOp.BITCOIN,
@@ -77,4 +96,6 @@ function childHash(child) {
 
 module.exports = {
     convertProof,
+    getKeyValue,
+    extractOps,
 };
